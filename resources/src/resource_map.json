@@ -1,0 +1,13 @@
+{
+    "friendlyVersion": "APP_RESOURCES",
+    "versionDefName": "APP_RESOURCES",
+    "media": [{
+        "type":"raw",
+        "defName":"DUMMY",
+        "file":"resource_map.json"
+    },{
+        "type": "png",
+        "defName": "TEST_TILE",
+        "file": "12-690-1452-sm.png"
+    }]
+}
