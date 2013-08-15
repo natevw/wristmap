@@ -1,0 +1,3 @@
+[submodule "httpebble-watch"]
+	path = httpebble-watch
+	url = git@github.com:Katharine/httpebble-watch.git
