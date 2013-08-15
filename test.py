@@ -1,4 +1,4 @@
-# ./repl.py --lightblue <watch-id>
+# ../libpebble/repl.py --lightblue <watch-id>
 pebble.reinstall_app("/Users/natevw/Development/Pebble/wristmap/build/wristmap.pbw")
 
 from time import sleep

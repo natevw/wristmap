@@ -53,8 +53,8 @@ void pbl_main(void *params) {
         .init_handler = &handle_init,
         .messaging_info = {
             .buffer_sizes = {
-                .inbound = 124, 
-                .outbound = 636, // outbound buffer size in bytes
+                .inbound = 124,
+                .outbound = 636,
             },
             .default_callbacks.callbacks = {
                 .in_received = message_rx,
