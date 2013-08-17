@@ -9,3 +9,8 @@ while True:
     if num >= 256:
         num = 1
     sleep(0.5)
+    
+import sys
+sys.path.append("../libpebble")
+from pebble.httpebble import HTTPebble
+pebble.install_bridge(HTTPebble)
