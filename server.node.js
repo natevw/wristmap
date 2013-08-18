@@ -9,8 +9,7 @@ var MAP_KEY_ULAT = 0,
 
 var ctx = new Canvas(256,256).getContext('2d');
 
-//http.request("http://d.tile.stamen.com/toner/12/690/1452.png", function (res) {
-http.request("http://localhost:8080/resources/src/12-690-1452-sm.png", function (res) {
+http.request("http://d.tile.stamen.com/toner/12/690/1452.png", function (res) {
 	res.pipe(concat(function (d) {
 		console.log("Image data loaded");
 		var img = new Canvas.Image();
@@ -37,7 +36,9 @@ http.createServer(function (req, res) {
 			b = new Buffer(3*w/8);
 		b.fill(0);
 		for (var i = 0; i < 3*w; i += 1) {
-			var set = px[pxOffset+4*i] > 127,
+			val = px[pxOffset+4*i];
+			if (val > 0 && val < 255) console.log(val);
+			var set = px[pxOffset+4*i] > 235,
 				bit = /*7 -*/ i % 8;
 			b[i/8 << 0] |= set << bit;
 		}
