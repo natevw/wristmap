@@ -31,7 +31,7 @@ int16_t rowN = 0;
 
 void next_rows() {
     DictionaryIterator* req;
-    http_out_get("http://192.168.1.112:8000/row", 0, &req);
+	http_out_get("http://localhost:8000/row", 0, &req);
     dict_write_int32(req, MAP_KEY_ULAT, ulat);
 	dict_write_int32(req, MAP_KEY_ULON, ulon);
     dict_write_int32(req, MAP_KEY_ZOOM, zoom);
@@ -51,10 +51,16 @@ void rcv_resp(int32_t tok, int code, DictionaryIterator* res, void* ctx) {
     Tuple* row = dict_find(res, MAP_KEY_ROW);
     if (row) {
         APP_LOG(APP_LOG_LEVEL_INFO, "Received %i bytes for row %i (%i)", row->length, row, code);
-        memcpy(imgData+20*rowN, row->value->data, row->length);
-        rowN += 1;
+		uint8_t* currData = row->value->data;
+		uint8_t currLength = row->length;
+		while (currLength >= 18) {
+			memcpy(imgData+20*rowN, currData, 18);
+			currData += 18;
+			currLength -= 18;
+			rowN += 1;
+		}
         if (rowN <= 168) next_rows();
-        else layer_mark_dirty((Layer*)&map.layer);
+        /*else */layer_mark_dirty((Layer*)&map.layer);
     }
 }
 
