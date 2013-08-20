@@ -18,6 +18,8 @@ enum {
   MAP_KEY_ROW
 };
 
+#define MIN_ZOOM 0
+#define MAX_ZOOM 18
 
 Window window;
 BitmapLayer map;
@@ -37,6 +39,14 @@ void next_rows() {
     dict_write_int32(req, MAP_KEY_ZOOM, zoom);
     dict_write_int32(req, MAP_KEY_ROW, rowN);
     http_out_send();
+}
+
+void change_zoom(ClickRecognizerRef recognizer, void* context) {
+    bool up = (uintptr_t)context;
+    if (up && zoom < MAX_ZOOM) zoom += 1;
+    else if (zoom > MIN_ZOOM) zoom -= 1;
+    rowN = 0;
+    next_rows();
 }
 
 void rcv_location(float lat, float lon, float alt, float acc, void* ctx) {
@@ -68,6 +78,14 @@ void rcv_fail(int32_t tok, int code, void* ctx) {
     APP_LOG(APP_LOG_LEVEL_WARNING, "HTTP request failure (%i)", code);
 }
 
+void click_config(ClickConfig** config, void* ctx) {
+    config[BUTTON_ID_UP]->click.handler = change_zoom;
+    config[BUTTON_ID_UP]->click.repeat_interval_ms = 0.5e3;
+    config[BUTTON_ID_UP]->context = (void*)(uintptr_t)true;
+    config[BUTTON_ID_DOWN]->click.handler = change_zoom;
+    config[BUTTON_ID_DOWN]->click.repeat_interval_ms = 0.5e3;
+    config[BUTTON_ID_UP]->context = (void*)(uintptr_t)false;
+}
 
 void handle_init(AppContextRef ctx) {
     //resource_init_current_app(&APP_RESOURCES);
@@ -80,6 +98,7 @@ void handle_init(AppContextRef ctx) {
     http_location_request();
     
     window_init(&window, "Window Name");
+    window_set_click_config_provider(&window, click_config);
     window_stack_push(&window, true /* Animated */);
     
     int16_t w = 144;    //window.layer.frame.size.w;
