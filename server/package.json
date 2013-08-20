@@ -1,0 +1,26 @@
+{
+  "name": "wristmap-server",
+  "version": "0.0.0",
+  "description": "Server for Pebble watch map app",
+  "main": "wristmap.node.js",
+  "dependencies": {
+    "concat-stream": "~1.0.1",
+    "fermata": "~0.9.6",
+    "queue-async": "~1.0.4",
+    "canvas": "~1.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"start" : "node ./wristmap.node.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:natevw/wristmap.git"
+  },
+  "author": "Nathan Vander Wilt",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/natevw/wristmap/issues"
+  }
+}
