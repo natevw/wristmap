@@ -41,20 +41,28 @@ void next_rows() {
     http_out_send();
 }
 
+void reload_map() {
+    // HACK: this will result in more consistently fast requests, but poor battery life.
+    //       see https://github.com/pebble/pebblekit/issues/31#issuecomment-20963734
+    app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
+    app_comm_set_sniff_interval(SNIFF_INTERVAL_NORMAL);
+    
+    rowN = 0;
+    next_rows();
+}
+
 void change_zoom(ClickRecognizerRef recognizer, void* context) {
     bool up = (uintptr_t)context;
     if (up && zoom < MAX_ZOOM) zoom += 1;
     else if (zoom > MIN_ZOOM) zoom -= 1;
-    rowN = 0;
-    next_rows();
+    reload_map();
 }
 
 void rcv_location(float lat, float lon, float alt, float acc, void* ctx) {
     ulat = lat * 1e6;
     ulon = lon * 1e6;
     APP_LOG(APP_LOG_LEVEL_INFO, "Got location %i, %i +/- %i, malt=%i", ulat, ulon, acc, alt*1e3);
-    rowN = 0;
-    next_rows();
+    reload_map();
 }
 
 void rcv_resp(int32_t tok, int code, DictionaryIterator* res, void* ctx) {
