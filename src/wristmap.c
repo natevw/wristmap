@@ -60,7 +60,7 @@ void rcv_location(float lat, float lon, float alt, float acc, void* ctx) {
 void rcv_resp(int32_t tok, int code, DictionaryIterator* res, void* ctx) {
     Tuple* row = dict_find(res, MAP_KEY_ROW);
     if (row) {
-        APP_LOG(APP_LOG_LEVEL_INFO, "Received %i bytes for row %i (%i)", row->length, row, code);
+        APP_LOG(APP_LOG_LEVEL_INFO, "Received %i bytes for row %i (%i)", row->length, rowN, code);
 		uint8_t* currData = row->value->data;
 		uint8_t currLength = row->length;
 		while (currLength >= 18) {
