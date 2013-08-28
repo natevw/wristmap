@@ -47,6 +47,10 @@ void reload_map() {
     app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
     app_comm_set_sniff_interval(SNIFF_INTERVAL_NORMAL);
     
+    // invert existing map to let user know it is stale
+    for (unsigned i=0; i < sizeof(imgData); i += 1) imgData[i] ^= 0xFF;
+    layer_mark_dirty((Layer*)&map.layer);
+    
     rowN = 0;
     next_rows();
 }
