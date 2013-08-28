@@ -29,7 +29,7 @@ uint8_t imgData[3360] = {0};        // 144x168 with rows padded to 32-bit word, 
 
 int32_t ulat, ulon;
 uint8_t zoom = 12;
-int16_t rowN = 0;
+uint8_t rowN = 0;
 
 void next_rows() {
     DictionaryIterator* req;
@@ -48,7 +48,7 @@ void reload_map() {
     app_comm_set_sniff_interval(SNIFF_INTERVAL_NORMAL);
     
     // invert existing map to let user know it is stale
-    for (unsigned i=0; i < sizeof(imgData); i += 1) imgData[i] ^= 0xFF;
+    for (unsigned i=0; i < 20*rowN; i += 1) imgData[i] ^= 0xFF;
     layer_mark_dirty((Layer*)&map.layer);
     
     rowN = 0;
