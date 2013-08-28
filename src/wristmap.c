@@ -33,7 +33,7 @@ uint8_t rowN = 0;
 
 void next_rows() {
     DictionaryIterator* req;
-	http_out_get("http://localhost:8000/row", 0, &req);
+	http_out_get("http://localhost:8000/row", rowN, &req);
     dict_write_int32(req, MAP_KEY_ULAT, ulat);
 	dict_write_int32(req, MAP_KEY_ULON, ulon);
     dict_write_int32(req, MAP_KEY_ZOOM, zoom);
@@ -71,9 +71,15 @@ void rcv_location(float lat, float lon, float alt, float acc, void* ctx) {
 }
 
 void rcv_resp(int32_t tok, int code, DictionaryIterator* res, void* ctx) {
+    if (tok != rowN) {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "Got stale response %i when expecting %i", tok, rowN);
+        next_rows();        // make sure current load is in progress (httpebble maybe gave previous HTTP_BUSY?)
+        return;
+    }
+    
     Tuple* row = dict_find(res, MAP_KEY_ROW);
     if (row) {
-        APP_LOG(APP_LOG_LEVEL_INFO, "Received %i bytes for row %i (%i)", row->length, rowN, code);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "Received %i bytes for row %i (%i)", row->length, rowN, code);
 		uint8_t* currData = row->value->data;
 		uint8_t currLength = row->length;
 		while (currLength >= 18) {
