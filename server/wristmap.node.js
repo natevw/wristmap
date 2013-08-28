@@ -1,6 +1,7 @@
 var http = require('http'),
 	f = require('fermata'),
 	q = require('queue-async'),
+    c = require('lru-cache'),
 	concat = require('concat-stream'),
 	Canvas = require('canvas');
 
@@ -9,20 +10,10 @@ var MAP_KEY_ULAT = 0,
 	MAP_KEY_ZOOM = 2,
 	MAP_KEY_ROW = 3;
 
-var W = 144, H = 168,
-	ctx = new Canvas(W,H).getContext('2d');
+var W = 144, H = 168;
 
-var __img_cache = Object.create(null);			// TODO: expire these after some sensible limit!
-
-
-http.request("http://d.tile.stamen.com/toner/12/690/1452.png", function (res) {
-	res.pipe(concat(function (d) {
-		console.log("Image data loaded");
-		var img = new Canvas.Image();
-		img.src = d;
-		ctx.drawImage(img,0,0);
-	}));
-}).end();
+var __img_cache = c({max:1250}),
+    __ctx_cache = Object.create(null);
 
 function getPixelsFor(view, cb) {
 	EARTH_RADIUS = 6378137.0;
@@ -56,7 +47,7 @@ function getPixelsFor(view, cb) {
 	function loadTile(x,y,cb) {
 		var tileBase = f.raw({base:"http://tile.stamen.com"})('toner'),
 			tileURL = tileBase(view.zoom,x,y+'.png'),
-			_cachedImg = __img_cache[tileURL()],
+			_cachedImg = __img_cache.get(tileURL()),
 			img = _cachedImg || new Canvas.Image();
 		console.log("Loading", tileURL(), (_cachedImg) ? "(from cache)":'');
 		if (_cachedImg) {
@@ -65,7 +56,7 @@ function getPixelsFor(view, cb) {
 			if (e) return cb(e);
 			else if (d.status !== 200) cb(new Error("Bad status code from tile server: "+d.status));
 			img.onload = function () {
-				__img_cache[tileURL()] = img;
+				__img_cache.set(tileURL(), img);
 				drawImg();
 			}
 			img.onerror = cb;
@@ -112,9 +103,19 @@ http.createServer(function (req, res) {
 			zzz = d[MAP_KEY_ZOOM],
 			row = d[MAP_KEY_ROW];
 		console.log("Got request",lat,lon,zzz,row);
-		
-		getPixelsFor({lat:lat,lon:lon,zoom:zzz}, function (e,px) {
-			if (e) {
+        
+        var k = [d[MAP_KEY_ULAT],d[MAP_KEY_ULON],zzz].join(),
+            px = __ctx_cache[k];
+        if (px) respondWithPx(null, px);
+        else getPixelsFor({lat:lat,lon:lon,zoom:zzz}, function (e,d) {
+            if (!e) {
+                __ctx_cache[k] = d;
+                setTimeout(function () { delete __ctx_cache[k]; }, 10e3);
+            }
+            respondWithPx(e,d);
+        });
+        function respondWithPx(e,px) {
+            if (e) {
 				res.writeHead(502, {'Content-Type': 'text/plain'});
 				res.end("Couldn't get map");
 			} else {
@@ -124,6 +125,7 @@ http.createServer(function (req, res) {
 				res.writeHead(200, {'Content-Type': 'application/json'});
 				res.end(JSON.stringify(data));
 			}
-		});
+        }
+        
 	}));
 }).listen(8000);
