@@ -49,6 +49,7 @@ void reload_map() {
     
     // invert existing map to let user know it is stale
     for (unsigned i=0; i < 20*rowN; i += 1) imgData[i] ^= 0xFF;
+    for (unsigned i=20*rowN; i < sizeof(imgData); i += 1) imgData[i] = 0;
     layer_mark_dirty((Layer*)&map.layer);
     
     rowN = 0;
