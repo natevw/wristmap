@@ -103,7 +103,7 @@ void click_config(ClickConfig** config, void* ctx) {
     config[BUTTON_ID_UP]->context = (void*)(uintptr_t)true;
     config[BUTTON_ID_DOWN]->click.handler = change_zoom;
     config[BUTTON_ID_DOWN]->click.repeat_interval_ms = 0.5e3;
-    config[BUTTON_ID_UP]->context = (void*)(uintptr_t)false;
+    config[BUTTON_ID_DOWN]->context = (void*)(uintptr_t)false;
 }
 
 void handle_init(AppContextRef ctx) {
