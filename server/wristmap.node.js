@@ -102,6 +102,7 @@ http.createServer(function (req, res) {
         } catch (e) {
             res.writeHead(400, {'Content-Type': 'text/plain'});
             res.end("Invalid JSON");
+            return;
         }
 		var lat = d[MAP_KEY_ULAT] / 1e6,
 			lon = d[MAP_KEY_ULON] / 1e6,
