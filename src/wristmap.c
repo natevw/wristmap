@@ -21,15 +21,36 @@ enum {
 #define MIN_ZOOM 0
 #define MAX_ZOOM 18
 
+AppContextRef app;
 Window window;
 BitmapLayer map;
 GBitmap img;
 uint8_t imgData[3360] = {0};        // 144x168 with rows padded to 32-bit word, 20*168 = 3360 bytes
 
-
+AppTimerHandle locTimer = APP_TIMER_INVALID_HANDLE;
 int32_t ulat, ulon;
 uint8_t zoom = 12;
 uint8_t rowN = 0;
+
+void reschedule_locTimer() {
+    if (locTimer) app_timer_cancel_event(app, locTimer);
+    // schedule the next update based on zoom level
+    uint32_t poll;
+    if (zoom < 5) {
+        poll = 600e3;
+    } else if (zoom < 10) {
+        poll = 60e3;
+    } else if (zoom < 14) {
+        poll = 5e3;
+    } else {
+        poll = 1e3;
+    }
+    locTimer = app_timer_send_event(app, poll, 0);
+}
+
+void request_location() {
+    http_location_request();
+}
 
 void next_rows() {
     DictionaryIterator* req;
@@ -61,6 +82,11 @@ void change_zoom(ClickRecognizerRef rec, void* ctx) {
     if (up && zoom > MIN_ZOOM) zoom -= 1;
     else if (zoom <  MAX_ZOOM) zoom += 1;
     reload_map();
+    reschedule_locTimer();
+}
+
+void trigger_location(ClickRecognizerRef rec, void* ctx) {
+    request_location();
 }
 
 void rcv_location(float lat, float lon, float alt, float acc, void* ctx) {
@@ -89,7 +115,8 @@ void rcv_resp(int32_t tok, int code, DictionaryIterator* res, void* ctx) {
 			rowN += 1;
 		}
         if (rowN <= 168) next_rows();
-        /*else */layer_mark_dirty((Layer*)&map.layer);
+        else reschedule_locTimer();
+        layer_mark_dirty((Layer*)&map.layer);
     }
 }
 
@@ -104,9 +131,12 @@ void click_config(ClickConfig** config, void* ctx) {
     config[BUTTON_ID_DOWN]->click.handler = change_zoom;
     config[BUTTON_ID_DOWN]->click.repeat_interval_ms = 0.5e3;
     config[BUTTON_ID_DOWN]->context = (void*)(uintptr_t)false;
+    config[BUTTON_ID_SELECT]->click.handler = trigger_location;
+    config[BUTTON_ID_SELECT]->click.repeat_interval_ms = 1e3;
 }
 
 void handle_init(AppContextRef ctx) {
+    app = ctx;
     //resource_init_current_app(&APP_RESOURCES);
     http_set_app_id(0x0fba6c10);
     http_register_callbacks((HTTPCallbacks){
@@ -114,7 +144,7 @@ void handle_init(AppContextRef ctx) {
         .failure = rcv_fail,
         .location = rcv_location,
     }, NULL);
-    http_location_request();
+    request_location();
     
     window_init(&window, "Window Name");
     window_set_click_config_provider(&window, click_config);
@@ -133,9 +163,17 @@ void handle_init(AppContextRef ctx) {
     layer_add_child(&window.layer, (Layer*)&map.layer);
 }
 
+void handle_timer(AppContextRef ctx, AppTimerHandle hdl, uint32_t tok) {
+    if (hdl == locTimer) {
+        locTimer = APP_TIMER_INVALID_HANDLE;
+        request_location();
+    }
+}
+
 void pbl_main(void *params) {
     PebbleAppHandlers handlers = {
         .init_handler = &handle_init,
+        .timer_handler = &handle_timer,
         .messaging_info = {
             .buffer_sizes = {
                 .inbound = 124,
