@@ -56,10 +56,10 @@ void reload_map() {
     next_rows();
 }
 
-void change_zoom(ClickRecognizerRef recognizer, void* context) {
-    bool up = (uintptr_t)context;
-    if (up && zoom < MAX_ZOOM) zoom += 1;
-    else if (zoom > MIN_ZOOM) zoom -= 1;
+void change_zoom(ClickRecognizerRef rec, void* ctx) {
+    bool up = (uintptr_t)ctx;
+    if (up && zoom > MIN_ZOOM) zoom -= 1;
+    else if (zoom <  MAX_ZOOM) zoom += 1;
     reload_map();
 }
 
