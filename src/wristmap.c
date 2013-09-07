@@ -33,7 +33,7 @@ uint8_t rowN = 0;
 
 void next_rows() {
     DictionaryIterator* req;
-	http_out_get("http://localhost:8000/row", rowN, &req);
+	http_out_get("http://wristmap.argyl.es/api/v1", rowN, &req);
     dict_write_int32(req, MAP_KEY_ULAT, ulat);
 	dict_write_int32(req, MAP_KEY_ULON, ulon);
     dict_write_int32(req, MAP_KEY_ZOOM, zoom);
