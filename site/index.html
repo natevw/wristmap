@@ -4,19 +4,105 @@
     <title>Wristmap - map display for Pebble watch</title>
     <style>
         body { font-family: Futura, sans-serif; }
+        header { margin-bottom: 1em; }
+        #byline {
+            position: relative;
+            top: -0.5em; left: 37px;
+            color: #559;
+            font-family: Gill Sans, sans-serif;
+        }
+        #byline a { color: inherit; }
+        header h1 { margin-bottom: 0; }
+        img {
+            float: left;
+            height: 350px;
+            margin-right: 1em;
+        }
+        #main {
+            float: left;
+            width: 50ex;
+        }
+        #main p {
+            margin-top: 0;
+        }
+        a { color: #007; }
+        
+        .centered {
+            display: block;
+            margin-left: 25%;
+            width: 50%;
+            text-align: center;
+        }
+        #download {
+            margin-top: 3.5em;
+            background: #ada;
+            border: 2px solid #090;
+            border-radius: 10px;
+            text-decoration: none;
+            
+            font-size: 1.25em;
+        }
+        #download span {
+            display: block;
+            font-size: 0.7em;
+        }
+        #source {
+            margin-top: 0.5em;
+            font-size: 0.85em;
+        }
+        
+        h2 { text-align: center; }
+        
+        footer {
+            margin-top: 5em;
+            font-size: 0.5em;
+            text-align: center;
+        }
+        
+        /* from http://nicolasgallagher.com/micro-clearfix-hack/ */
+        .cf::before, .cf::after {
+            content: " "; /* 1 */
+            display: table; /* 2 */
+        }
+        .cf::after {
+            clear: both;
+        }
+        .cf {       /* IE 6/7 */
+            *zoom: 1;
+        }
     </style>
 </head><body>
-    <h1>Wristmap</h1>
-
-<pre>
-    picture
-    
-    explanation
-    
-    download link / github link
-    
-    httpebble link
-    
-    stamen cred
-</pre>
+    <header>
+        <h1>Wristmap</h1>
+        <span id=byline>by <a href="http://exts.ch">natevw</a>.</span>
+    </header>
+<div class=cf>
+    <img src="wristmap-richland.jpg">
+    <div id=main>
+        <p>
+            Wristmap is a Pebble watch app (and web service) that shows a map of your location
+            using <a href="http://stamen.com">Stamen</a>'s <a href="http://maps.stamen.com/#toner/12/46.2777/-119.2662">Toner tileset</a>.
+        </p>
+        <a id=download href="dl/wristmap-v1.0.pbw" class=centered>Download <span>wristmap-v1.0.pbw</span></a>
+        <a id=source href="https://github.com/natevw/wristmap" class=centered>source on github</a>
+    </div>
+</div>
+    <h2>Instructions</h2>
+    <h3>1. Set up HTTPebble app</h3>
+    <p>
+        Wristmap uses <a href="http://kathar.in/httpebble/">HTTPebble</a> to talk with the map service here
+        (which then fetches tiles from Stamen's server on behalf of your watch) — so you'll also need need the
+        <a href="https://play.google.com/store/apps/details?id=com.lukekorth.httpebble">Pebble Connect</a> (Android) or 
+        <a href="https://itunes.apple.com/us/app/httpebble/id650174711">httpebble</a> (iOS)
+        companion app running on your Pebble's tether device.
+    </p>
+    <h3>2. Install and use the watchface</h3>
+    <p>
+        Download the app above and install it to your watch using the main Pebble app.
+    <p>
+        The up/down buttons will zoom the map<!--; use the select (middle) button to manually trigger a location check.
+        As long as Wristmap is running, it periodically updates your GPS position. The automatic update speed is based on map zoom level-->.
+    <footer>
+    Copyright © 2013 Nathan Vander Wilt.
+    </footer>
 </body></html>
