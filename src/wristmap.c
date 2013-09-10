@@ -32,8 +32,22 @@ int32_t ulat, ulon;
 uint8_t zoom = 12;
 uint8_t rowN = 0;
 
-const uint8_t mapW = 144;   //window.layer.frame.size.w;
-const uint8_t mapH = 168-16;   //window.layer.frame.size.h;
+const uint8_t mapW = 144;       //window.layer.frame.size.w;
+const uint8_t mapH = 168-16;    //window.layer.frame.size.h;
+
+const uint8_t dotR = 8;
+BitmapLayer dot;
+GBitmap dotImg;
+uint32_t dotData[] = {
+    0b11111111,
+    0b10000001,
+    0b10011001,
+    0b10111101,
+    0b10111101,
+    0b10011001,
+    0b10000001,
+    0b11111111
+};
 
 void reschedule_locTimer() {
     if (locTimer) app_timer_cancel_event(app, locTimer);
@@ -162,6 +176,17 @@ void handle_init(AppContextRef ctx) {
     bitmap_layer_init(&map, GRect(0,0,mapW,mapH));
     bitmap_layer_set_bitmap(&map, &img);
     layer_add_child(&window.layer, (Layer*)&map.layer);
+    
+    dotImg = (GBitmap) {
+        .addr = (uint8_t*)dotData,
+        .bounds = GRect(0,0,dotR,dotR),
+        .info_flags = 1,
+        .row_size_bytes = 4,
+    };
+    bitmap_layer_init(&dot, GRect((mapW-dotR)/2,(mapH-dotR)/2,dotR,dotR));
+    bitmap_layer_set_bitmap(&dot, &dotImg);
+    //bitmap_layer_set_compositing_mode(&dot, GCompOpAssignInverted);
+    layer_add_child(&window.layer, (Layer*)&dot.layer);
 }
 
 void handle_timer(AppContextRef ctx, AppTimerHandle hdl, uint32_t tok) {
