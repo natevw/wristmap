@@ -32,6 +32,9 @@ int32_t ulat, ulon;
 uint8_t zoom = 12;
 uint8_t rowN = 0;
 
+const uint8_t mapW = 144;   //window.layer.frame.size.w;
+const uint8_t mapH = 168-16;   //window.layer.frame.size.h;
+
 void reschedule_locTimer() {
     if (locTimer) app_timer_cancel_event(app, locTimer);
     // schedule the next update based on zoom level
@@ -114,7 +117,7 @@ void rcv_resp(int32_t tok, int code, DictionaryIterator* res, void* ctx) {
 			currLength -= 18;
 			rowN += 1;
 		}
-        if (rowN <= 168) next_rows();
+        if (rowN < mapH) next_rows();
         else reschedule_locTimer();
         layer_mark_dirty((Layer*)&map.layer);
     }
@@ -150,15 +153,13 @@ void handle_init(AppContextRef ctx) {
     window_set_click_config_provider(&window, click_config);
     window_stack_push(&window, true /* Animated */);
     
-    int16_t w = 144;    //window.layer.frame.size.w;
-    int16_t h = 168;    //window.layer.frame.size.h;
     img = (GBitmap) {
         .addr = imgData,
-        .bounds = GRect(0,0,w,h),
+        .bounds = GRect(0,0,mapW,mapH),
         .info_flags = 1,
         .row_size_bytes = 20,
     };
-    bitmap_layer_init(&map, GRect(0,0,w,h));
+    bitmap_layer_init(&map, GRect(0,0,mapW,mapH));
     bitmap_layer_set_bitmap(&map, &img);
     layer_add_child(&window.layer, (Layer*)&map.layer);
 }
