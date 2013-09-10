@@ -58,9 +58,9 @@ void reschedule_locTimer() {
     } else if (zoom < 10) {
         poll = 60e3;
     } else if (zoom < 14) {
-        poll = 5e3;
+        poll = 15e3;
     } else {
-        poll = 1e3;
+        poll = 7e3;
     }
     locTimer = app_timer_send_event(app, poll, 0);
 }
