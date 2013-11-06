@@ -4,7 +4,8 @@ Buffer = Array;
 
 var ctx = document.createElement('canvas').getContext('2d');
 ctx.drawImage(document.body.firstElementChild,0,0);
-var px = ctx.getImageData(0,0,ctx.canvas.width,ctx.canvas.height).data;
+//var px = ctx.getImageData(0,0,ctx.canvas.width,ctx.canvas.height).data;
+var px = ctx.getImageData(0,0,144,168-16).data;
 
 var bitmap = [],
     bit = 0;
@@ -53,7 +54,7 @@ exports.compress = function (bitmap) {
     }
     
     // return compressed data iff it is smaller than the original
-    if (DEBUG) console.log("Input:",bit, "Output:",bufBit, "ratio",bufBit/bit);
+    if (1 || DEBUG) console.log("Input:",bit, "Output:",bufBit, "ratio",bufBit/bit);
     return (bufBit < bml) ? buffer.slice(0, (bufBit / 8) >> 0) : null;
     
     function bitMatches() {
@@ -78,19 +79,23 @@ exports.compress = function (bitmap) {
                 str0 = (1 << (pair[1] - str1.length)).toString(2).slice(1);
             console.log(str0+str1);
         }
+        bufBit += pair[1];              // calculate position of pair[0]'s LSB
         var idx = (bufBit / 8) >> 0,
             sft = 7 - (bit % 8);
-        // NOTE: only need to append 2 bytes max, `CODES[1].makeup.reduce(function (max,p) { return Math.max(p[1],max); }, 0)` is 13
-        
-        // TODO: paste 0-padded pair[0] at bufBit
-        // compute: where does it end?
-        
-        bufBit += pair[1];
+        // NOTE: only need to paste 2 bytes max, `CODES[1].makeup.reduce(function (max,p) { return Math.max(p[1],max); }, 0)` is 13
+        var merge = pair[0] << sft;
+        buffer[idx] |= merge & 0xFF;
+        if (merge >>= 8) {
+            buffer[idx-1] |= merge & 0xFF;
+            if (merge >>= 8) {      // …however, sft's offset may cause the codeword to overlap a third byte
+                buffer[idx-2] |= merge & 0xFF;      
+            }
+        }
     }
 };
 
 try {
-    var start = Date.now();
-    exports.compress(bitmap, {outputLimit:8});
+    var start = Date.now(),
+        result = exports.compress(bitmap, {outputLimit:8});
     console.log("Took", Date.now()-start, "milliseconds");
 } catch (e) { console.log(e.stack); }
