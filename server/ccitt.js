@@ -38,10 +38,7 @@ function _(s) {
     return [parseInt(s,2), s.length];
 }
 
-exports.compress = function (bitmap, info) {
-    // info.outputLimit->bitsConsumed
-    // info.width, info.rowLength [prolly not going to implement, but would be required for row padding and/or EOL codes]
-    
+exports.compress = function (bitmap) {
     var bit = 0,
         bml = bitmap.length * 8,
         black = (bitmap[0] >> 7) & 1,
