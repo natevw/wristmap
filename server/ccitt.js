@@ -32,7 +32,7 @@ var CODES = [           // NOTE: makeup EOL moved to first place, easier to find
 var EXTRA_MAKEUP = [_('00000001000'),_('00000001100'),_('00000001101'),_('000000010010'),_('000000010011'),_('000000010100'),_('000000010101'),_('000000010110'),_('000000010111'),_('000000011100'),_('000000011101'),_('000000011110'),_('000000011111')];
 Array.prototype.push.apply(CODES[0].makeup, EXTRA_MAKEUP);
 Array.prototype.push.apply(CODES[1].makeup, EXTRA_MAKEUP);
-var MAX_MAKEUP = CODES[0].makeup.length - 1;
+var MAX_MAKEUP_IDX = CODES[0].makeup.length - 1;
 
 function _(s) {
     return [parseInt(s,2), s.length];
@@ -66,7 +66,7 @@ exports.compress = function (bitmap) {
         if (DEBUG) console.log(black ^ 1, 'rl', rl);
         var clr = black ^ 1;
         while (rl > 63) {
-            var idx = Math.min((rl / 64) >> 0, MAX_MAKEUP);
+            var idx = Math.min((rl / 64) >> 0, MAX_MAKEUP_IDX);
             append(CODES[clr].makeup[idx]);
             rl -= 64 * idx;
         }
