@@ -1,3 +1,4 @@
+DEBUG = false;
 exports = {};
 Buffer = Array;
 
@@ -39,21 +40,24 @@ function _(s) {
 
 exports.compress = function (bitmap, info) {
     // info.outputLimit->bitsConsumed
-    // info.width, info.rowLength [prolly not going to implement, but would be required for row padding and/or EOL words]
+    // info.width, info.rowLength [prolly not going to implement, but would be required for row padding and/or EOL codes]
     
     var bit = 0,
         bml = bitmap.length * 8,
         black = (bitmap[0] >> 7) & 1,
         bufBit = 0,
-        buffer = Buffer(info.outputLimit/8);
+        buffer = Buffer(bitmap.length);
     if (black) output(0);
-    while (bit < bml && bufBit < info.outputLimit) {
+    while (bit < bml && bufBit < bml) {
         var rl = 1;         // optimization: we've already ready previous (state-changing) bit
         while (bit++ < bml && bitMatches()) ++rl;
         black ^= 1;
         output(rl);
     }
-    console.log("Input:",bit, "Output:",bufBit, "ratio",bufBit/bit);
+    
+    // return compressed data iff it is smaller than the original
+    if (DEBUG) console.log("Input:",bit, "Output:",bufBit, "ratio",bufBit/bit);
+    return (bufBit < bml) ? buffer.slice(0, (bufBit / 8) >> 0) : null;
     
     function bitMatches() {
         var idx = (bit / 8) >> 0,
@@ -61,9 +65,8 @@ exports.compress = function (bitmap, info) {
         return black === ((bitmap[idx] >> sft) & 1);
     }
     
-    
     function output(rl) {   // this outputs for the *previous* state to keep optimization above clean
-console.log(black ^ 1, 'rl', rl);
+        if (DEBUG) console.log(black ^ 1, 'rl', rl);
         var clr = black ^ 1;
         while (rl > 63) {
             var idx = Math.min((rl / 64) >> 0, MAX_MAKEUP);
@@ -73,16 +76,24 @@ console.log(black ^ 1, 'rl', rl);
         append(CODES[clr].terminating[rl]);
     }
     function append(pair) {
-var str1 = pair[0].toString(2),
-    str0 = (1 << (pair[1] - str1.length)).toString(2).slice(1);
-console.log(str0+str1);
+        if (DEBUG) {
+            var str1 = pair[0].toString(2),
+                str0 = (1 << (pair[1] - str1.length)).toString(2).slice(1);
+            console.log(str0+str1);
+        }
         var idx = (bufBit / 8) >> 0,
             sft = 7 - (bit % 8);
+        // NOTE: only need to append 2 bytes max, `CODES[1].makeup.reduce(function (max,p) { return Math.max(p[1],max); }, 0)` is 13
+        
         // TODO: paste 0-padded pair[0] at bufBit
+        // compute: where does it end?
+        
         bufBit += pair[1];
     }
 };
 
 try {
-    exports.compress(bitmap, {outputLimit:bitmap.length*8});
+    var start = Date.now();
+    exports.compress(bitmap, {outputLimit:8});
+    console.log("Took", Date.now()-start, "milliseconds");
 } catch (e) { console.log(e.stack); }
